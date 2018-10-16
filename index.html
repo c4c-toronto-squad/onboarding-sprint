@@ -3,12 +3,6 @@
 <head>
 <meta charset="utf-8" />
 <title>Vision Zero Sprint</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
-integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
-crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
-integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
-crossorigin=""></script>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 
 <style>
@@ -19,72 +13,91 @@ html, body, #map {
   padding: 0;
   margin: 0;
 }
+
+.collisions, .collisions svg {
+  position: absolute;
+}
+
+.collisions svg {
+  width: 60px;
+  height: 20px;
+  padding-right: 100px;
+}
+
+circle.collision {
+  fill: blue;
+  fill-opacity: 0.1;
+}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <script>
-const TORONTO_CENTROID = L.latLng(43.6986, -79.3854);
+const TORONTO_CENTROID = {lat: 43.6986, lng: -79.3854};
 
-function initMap(data) {
-  const mapOptions = {
-    worldCopyJump: true
-  };
-  const map = new L.Map('map', mapOptions);
-  const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  const attribution = 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
-  const osm = new L.TileLayer(osmUrl, {minZoom: 11, maxZoom: 16, attribution});
-  map
-    .addLayer(osm)
-    .setView(TORONTO_CENTROID, 11);
-    //.setMaxBounds(map.getBounds());
-
-  data = data.slice(0, 100);
-
-  const svg = d3.select(map.getPanes().overlayPane)
-    .append('svg')
-    .attr('width', map._size.x)
-    .attr('height', map._size.y);
-  const g = svg.append('g')
-    .attr('class', 'leaflet-zoom-hide');
-  const circles = g.selectAll('circle')
-    .data(data)
-    .enter().append('circle')
-      .attr('r', 25)
-      .style('fill-opacity', 0.1)
-      .attr('fill', 'blue');
-
-  map.on('zoom', update);
-  map.on('move', update);
-  update();
-
-  function update() {
-    console.log('update', +new Date());
-    circles.attr('transform', d => {
-      const latLng = L.latLng(d.lat, d.lng);
-      const {x, y} = map.latLngToLayerPoint(latLng);
-      return `translate(${x}, ${y})`;
-    });
-  }
-
-  // Use Leaflet to implement a D3 geometric transformation.
-  function projectPoint(x, y) {
-    const point = map.latLngToLayerPoint(new L.LatLng(y, x));
-    this.stream.point(point.x, point.y);
-  }
+function init() {
+  d3.csv('/KSI.csv', d => {
+    const date = new Date(d.DATE).valueOf();
+    const timeOfDay = parseInt(d.TIME, 10);
+    const mins = Math.floor(timeOfDay / 100) * 60 + timeOfDay % 100;
+    const t = new Date(date + mins * 60 * 1000);
+    const lat = parseFloat(d.Y);
+    const lng = parseFloat(d.X);
+    return {t, lat, lng};
+  }).then(initMap);
 }
 
-d3.csv('/KSI.csv', d => {
-  // timestamp
-  const date = new Date(d.DATE).valueOf();
-  const timeOfDay = parseInt(d.TIME, 10);
-  const mins = Math.floor(timeOfDay / 100) * 60 + timeOfDay % 100;
-  const t = new Date(date + mins * 60 * 1000);
-  const lat = parseFloat(d.Y);
-  const lng = parseFloat(d.X);
+function initMap(data) {
+  const $map = document.getElementById('map');
+  const map = new google.maps.Map($map, {
+    center: TORONTO_CENTROID,
+    zoom: 11,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false
+  });
 
-  return {t, lat, lng};
-}).then(initMap);
+  const overlay = new google.maps.OverlayView();
+  data = data.slice(0, 100);
+
+  // Add the container when the overlay is added to the map.
+  overlay.onAdd = function() {
+    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+        .attr("class", "collisions");
+
+    // Draw each marker as a separate SVG element.
+    // We could use a single SVG, but what size would it have?
+    overlay.draw = function() {
+      var projection = this.getProjection(),
+          padding = 10;
+
+      var marker = layer.selectAll("svg")
+          .data(data)
+          .each(transform) // update existing markers
+        .enter().append("svg")
+          .each(transform)
+          .attr("class", "marker");
+
+      // Add a circle.
+      marker.append("circle")
+        .classed('collision', true)
+        .attr("r", 5)
+        .attr("cx", padding)
+        .attr("cy", padding);
+
+      function transform(d) {
+        d = new google.maps.LatLng(d.lat, d.lng);
+        d = projection.fromLatLngToDivPixel(d);
+        return d3.select(this)
+            .style("left", (d.x - padding) + "px")
+            .style("top", (d.y - padding) + "px");
+      }
+    };
+  };
+
+  overlay.setMap(map);
+}
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKZYcFPS95XmFWNZ1o6EWTNORJvTPm7lo&callback=init" async defer></script>
 </body>
 </html>

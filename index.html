@@ -24,19 +24,53 @@ html, body, #map {
 <body>
 <div id="map"></div>
 <script>
+const TORONTO_CENTROID = L.latLng(43.6986, -79.3854);
+
 function initMap(data) {
   const mapOptions = {
     worldCopyJump: true
   };
   const map = new L.Map('map', mapOptions);
   const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  const osmAttrib = 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
-  const osm = new L.TileLayer(osmUrl, {minZoom: 10, maxZoom: 16, attribution: osmAttrib});
+  const attribution = 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+  const osm = new L.TileLayer(osmUrl, {minZoom: 11, maxZoom: 16, attribution});
   map
     .addLayer(osm)
-    .setView(L.latLng(43.6486, -79.3854), 11);
-  for (let i = 0; i < 100; i++) {
-    L.marker(data[i]).addTo(map);
+    .setView(TORONTO_CENTROID, 11);
+    //.setMaxBounds(map.getBounds());
+
+  data = data.slice(0, 100);
+
+  const svg = d3.select(map.getPanes().overlayPane)
+    .append('svg')
+    .attr('width', map._size.x)
+    .attr('height', map._size.y);
+  const g = svg.append('g')
+    .attr('class', 'leaflet-zoom-hide');
+  const circles = g.selectAll('circle')
+    .data(data)
+    .enter().append('circle')
+      .attr('r', 25)
+      .style('fill-opacity', 0.1)
+      .attr('fill', 'blue');
+
+  map.on('zoom', update);
+  map.on('move', update);
+  update();
+
+  function update() {
+    console.log('update', +new Date());
+    circles.attr('transform', d => {
+      const latLng = L.latLng(d.lat, d.lng);
+      const {x, y} = map.latLngToLayerPoint(latLng);
+      return `translate(${x}, ${y})`;
+    });
+  }
+
+  // Use Leaflet to implement a D3 geometric transformation.
+  function projectPoint(x, y) {
+    const point = map.latLngToLayerPoint(new L.LatLng(y, x));
+    this.stream.point(point.x, point.y);
   }
 }
 

@@ -6,12 +6,51 @@
 <script src="https://d3js.org/d3.v5.min.js"></script>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 html, body, #map {
   min-width: 960px;
   min-height: 100%;
   height: 100%;
   padding: 0;
   margin: 0;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+}
+
+#left {
+  height: 100%;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #ccc;
+}
+
+.left-section {
+  padding: 4px;
+}
+
+.left-section:not(:last-child) {
+  border-bottom: 1px solid #ccc;
+}
+
+#main {
+  width: calc(100% - 320px);
+  height: calc(100% - 200px);
+}
+
+#bottom {
+  height: 200px;
+  width: 100%;
+  border-top: 1px solid #ccc;
 }
 
 .collisions {
@@ -25,12 +64,35 @@ circle.collision {
 </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="root">
+  <div id="left">
+    <div id="vz" class="left-section">
+      <h1>Vision Zero Toronto</h1>
+    </div>
+    <div id="demographic" class="left-section">
+      <p>Who do you identify with?</p>
+    </div>
+    <div id="transport" class="left-section">
+      <p>How do you get around?</p>
+    </div>
+    <div id="interventions" class="left-section">
+      <h2>Interventions</h2>
+    </div>
+  </div>
+  <div id="main">
+    <div id="map"></div>
+    <div id="bottom">
+      <div id="context">
+
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 const TORONTO_CENTROID = {lat: 43.6986, lng: -79.3854};
 
 function init() {
-  d3.csv('/KSI.csv', d => {
+  d3.csv('/data/KSI.csv', d => {
     const date = new Date(d.DATE).valueOf();
     const timeOfDay = parseInt(d.TIME, 10);
     const mins = Math.floor(timeOfDay / 100) * 60 + timeOfDay % 100;
@@ -53,6 +115,15 @@ function initMap(data) {
     // hide unneeded features to focus on roads
     // see https://snazzymaps.com/style/7846/roads-only
     styles: [
+        {
+            "featureType": "administrative",
+            "elementType": "all",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
             "featureType": "landscape",
             "elementType": "all",
@@ -80,6 +151,7 @@ function initMap(data) {
                 }
             ]
         },
+        /*
         {
             "featureType": "road",
             "elementType": "labels",
@@ -89,6 +161,7 @@ function initMap(data) {
                 }
             ]
         },
+        */
         {
             "featureType": "transit",
             "elementType": "all",

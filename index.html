@@ -31,6 +31,8 @@ html, body, #map {
 
   display: flex;
   flex-direction: row;
+
+  overflow: none;
 }
 
 #left {
@@ -41,7 +43,20 @@ html, body, #map {
 }
 
 .left-section {
-  padding: 6px;
+  padding: 5px;
+}
+
+#interventions > ul {
+  height: 320px;
+  overflow-y: auto;
+}
+
+.intervention-icon {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  float: left;
+  margin-right: 5px;
 }
 
 #main {
@@ -72,23 +87,97 @@ circle.collision {
     </div>
     <div id="demographic" class="left-section border-bottom">
       <p>Who do you identify with?</p>
-      <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn btn-outline-secondary">Child</button>
-        <button type="button" class="btn btn-outline-secondary">Adult</button>
-        <button type="button" class="btn btn-outline-secondary">Senior</button>
+      <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Demographic">
+        <label class="btn btn-outline-secondary active">
+          <input type="radio" name="demographic" id="demographic_child" autocomplete="off" checked> Child
+        </label>
+        <label class="btn btn-outline-secondary">
+          <input type="radio" name="demographic" id="demographic_adult" autocomplete="off"> Adult
+        </label>
+        <label class="btn btn-outline-secondary">
+          <input type="radio" name="demographic" id="demographic_senior" autocomplete="off"> Senior
+        </label>
       </div>
     </div>
     <div id="transport" class="left-section border-bottom">
       <p>How do you get around?</p>
-      <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn btn-outline-secondary">Ped</button>
-        <button type="button" class="btn btn-outline-secondary">Cyclist</button>
-        <button type="button" class="btn btn-outline-secondary">Car</button>
-        <button type="button" class="btn btn-outline-secondary">Transit</button>
+      <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Mode of transport">
+        <label class="btn btn-outline-secondary active">
+          <input type="radio" name="transport" id="transport_walking" autocomplete="off" checked>
+          <img src="/img/pedestrian.svg" alt="Walking" width="32" height="32" />
+        </label>
+        <label class="btn btn-outline-secondary">
+          <input type="radio" name="transport" id="transport_cycling" autocomplete="off">
+          <img src="/img/cyclist.svg" alt="Cycling" width="32" height="32" />
+        </label>
+        <label class="btn btn-outline-secondary">
+          <input type="radio" name="transport" id="transport_driving" autocomplete="off">
+          <img src="/img/motorist.svg" alt="Driving" width="32" height="32" />
+        </label>
+        <label class="btn btn-outline-secondary">
+          <input type="radio" name="transport" id="transport_transit" autocomplete="off">
+          <img src="/img/transit.svg" alt="Transit" width="32" height="32" />
+        </label>
       </div>
     </div>
     <div id="interventions" class="left-section">
       <h2>Interventions</h2>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+        <li class="list-group-item">
+          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+          <p class="intervention-description">
+            Separated bike lanes are awesome.
+          </p>
+        </li>
+      </ul>
     </div>
   </div>
   <div id="main">

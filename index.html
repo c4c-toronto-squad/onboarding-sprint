@@ -320,6 +320,14 @@ function initMap(data) {
     ]
   });
 
+  const bounds = new google.maps.LatLngBounds();
+  /*
+   * Focus on Richmond / Adelaide area.
+   */
+  bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
+  bounds.extend(new google.maps.LatLng(43.666530, -79.338263));
+  map.fitBounds(bounds);
+
   const overlay = new google.maps.OverlayView();
   data = data.slice(0, 1000);
 

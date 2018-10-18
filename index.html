@@ -45,7 +45,7 @@ html, body, #map {
 
 #logo {
   width: 305px;
-  margin: 10px 0 0 38px;
+  margin: 10px 0 0 28px;
 }
 
 #content {
@@ -59,24 +59,17 @@ html, body, #map {
 #left {
   height: 100%;
   width: 337px;
+  position: relative;
   display: flex;
   flex-direction: column;
 }
 
-#vz {
-  color: #539fc5;
+#controls {
+  padding-bottom: 14px;
 }
 
-#vz > h2 {
-  font-size: 22px;
-  margin-top: 22px;
-}
-
-#vz > p {
-  margin-bottom: 22px;
-}
-
-#controls > h3 {
+#controls > h3,
+#interventions > h3 {
   color: #3f728c;
   font-size: 14px;
   font-weight: 700;
@@ -85,34 +78,88 @@ html, body, #map {
 }
 
 .left-section {
-  padding-left: 45px;
+  padding-left: 35px;
+  padding-right: 5px;
+}
+
+#left_bottom {
+  position: absolute;
+  bottom: 0;
+  padding-left: 35px;
+  padding-bottom: 14px;
+}
+
+#choose_another {
+  margin-top: 14px;
+}
+
+#left_bottom > p {
+  color: #3f728c;
+  font-size: 11px;
+  padding-top: 11px;
 }
 
 .btn-outline-primary {
-  color: #075075;
   border-color: #075075;
+  color: #075075;
+}
+
+.btn-outline-primary > img {
+  width: 24px;
+  height: 24px;
 }
 
 .intervention {
   cursor: pointer;
+  padding: 5px;
 }
 
 .intervention-icon {
   display: inline-block;
-  width: 64px;
-  height: 64px;
+  width: 32px;
+  height: 32px;
   float: left;
   margin-right: 5px;
 }
 
+.intervention-description {
+  padding-top: 4px;
+  margin-bottom: 0;
+}
+
 #main {
+  position: relative;
   width: calc(100% - 337px);
-  height: calc(100% - 141px);
+  height: 100%;
 }
 
 #bottom {
+  position: absolute;
+  left: 33px;
+  bottom: 0;
   height: 141px;
-  width: 100%;
+  width: calc(100% - 66px);
+
+  background-color: #fdfdfd;
+  border-radius: 2px;
+}
+
+#impact {
+  padding: 0 22px 17px 22px;
+}
+
+#impact > h2 {
+  color: #3f728c;
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 22px;
+  text-transform: uppercase;
+}
+
+#impact_text {
+  color: #3f728c;
+  font-size: 17px;
+  font-weight: 300;
 }
 
 .collisions {
@@ -144,13 +191,7 @@ circle.collision {
   </div>
   <div id="content">
     <div id="left" class="border-right">
-      <div id="vz" class="left-section border-bottom">
-        <h2>In 2017, 45 lives were lost on Toronto’s streets.</h2>
-        <p>
-The Vision Zero Road Safety Plan is a comprehensive five year (2017-2021) action plan focused on reducing traffic-related fatalities and serious injuries on Toronto’s streets.
-        </p>
-      </div>
-      <div id="controls" class="left-section border-bottom">
+      <div id="controls" class="left-section">
         <h3>Collision Impact</h3>
         <div class="legend-entry">
           <svg width="10" height="10" class="legend-icon">
@@ -164,69 +205,82 @@ The Vision Zero Road Safety Plan is a comprehensive five year (2017-2021) action
           </svg>
           <span>Injuries</span>
         </div>
+        <!--
         <div class="legend-entry">
           <svg width="10" height="10" class="legend-icon">
             <circle class="collision" r="5" cx="5" cy="5"></circle>
           </svg>
           <span>Other</span>
         </div>
+        -->
 
         <h3>Viewpoint</h3>
         <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Demographic">
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="demographic" id="demographic_child" autocomplete="off" value="CHILD"> Child
           </label>
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="demographic" id="demographic_adult" autocomplete="off" value="ADULT"> Adult
           </label>
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="demographic" id="demographic_senior" autocomplete="off" value="SENIOR"> Senior
           </label>
         </div>
 
         <h3>Mode of transport</h3>
         <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Mode of transport">
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="transport" id="transport_walking" autocomplete="off" value="WALKING">
-            <img src="/img/pedestrian.svg" alt="Walking" width="32" height="32" />
+            <img src="/img/pedestrian.svg" alt="Walking" />
           </label>
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="transport" id="transport_cycling" autocomplete="off" value="CYCLING">
-            <img src="/img/cyclist.svg" alt="Cycling" width="32" height="32" />
+            <img src="/img/cyclist.svg" alt="Cycling" />
           </label>
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="transport" id="transport_driving" autocomplete="off" value="DRIVING">
-            <img src="/img/motorist.svg" alt="Driving" width="32" height="32" />
+            <img src="/img/motorist.svg" alt="Driving" />
           </label>
-          <label class="btn btn-outline-primary">
+          <label class="btn btn-sm btn-outline-primary">
             <input type="radio" form="form_query" name="transport" id="transport_transit" autocomplete="off" value="TRANSIT">
-            <img src="/img/transit.svg" alt="Transit" width="32" height="32" />
+            <img src="/img/transit.svg" alt="Transit" />
           </label>
+        </div>
+
+        <h3>Safety Interventions</h3>
+        <div class="list-group list-group-flush">
+          <button class="intervention list-group-item list-group-item-action">
+            <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+            <p class="intervention-description">
+              Separated bike lane
+            </p>
+          </button>
+          <button class="intervention list-group-item list-group-item-action">
+            <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+            <p class="intervention-description">
+              On-road "sharrows"
+            </p>
+          </button>
         </div>
       </div>
-      <div id="interventions" class="left-section">
-        <h2>Interventions</h2>
-        <div class="list-group">
-          <button class="intervention list-group-item list-group-item-action">
-            <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-            <p class="intervention-description">
-              Separated bike lanes are awesome.
-            </p>
-          </button>
-          <button class="intervention list-group-item list-group-item-action">
-            <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-            <p class="intervention-description">
-              Separated bike lanes are awesome.
-            </p>
-          </button>
-        </div>
+      <div id="left_bottom">
+
+        <button id="choose_another" class="btn btn-primary">
+          Choose Another View
+        </button>
+        <p>
+          Data last updated: December 31, 2017
+        </p>
       </div>
     </div>
     <div id="main">
       <div id="map"></div>
-      <div id="bottom" class="border-top">
-        <div id="context">
-
+      <div id="bottom">
+        <div id="impact">
+          <h2>What's the Impact?</h2>
+          <p id="impact_text">
+            TODO: show impact here
+          </p>
         </div>
       </div>
     </div>
@@ -234,8 +288,6 @@ The Vision Zero Road Safety Plan is a comprehensive five year (2017-2021) action
 </div>
 <script>
 const TORONTO_CENTROID = {lat: 43.6986, lng: -79.3854};
-
-
 
 // hide unneeded features to focus on roads
 // see https://snazzymaps.com/style/7846/roads-only
@@ -352,8 +404,8 @@ const CollisionSeverity = {
 
 const $map = document.getElementById('map');
 const form = document.forms.form_query;
-let dataKSI = [];
-let dataIntervention = [];
+let dataKSI = null;
+let dataIntervention = null;
 let map = null;
 let layer = null;
 let overlay = null;
@@ -552,16 +604,24 @@ function initMap(data) {
   overlay.setMap(map);
 }
 
-function interventionClicked() {
-  promiseIntervention().then(data => {
-    dataIntervention = data;
-    redrawMarkers();
+function zoomToInterventions() {
+  redrawMarkers();
 
-    const bounds = new google.maps.LatLngBounds();
-    bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
-    bounds.extend(new google.maps.LatLng(43.666530, -79.338263));
-    map.fitBounds(bounds);
-  });
+  const bounds = new google.maps.LatLngBounds();
+  bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
+  bounds.extend(new google.maps.LatLng(43.666530, -79.338263));
+  map.fitBounds(bounds);
+}
+
+function interventionClicked() {
+  if (dataIntervention === null) {
+    promiseIntervention().then(data => {
+      dataIntervention = data;
+      zoomToInterventions();
+    });
+  } else {
+    zoomToInterventions();
+  }
 }
 
 function matchesQuery(query) {
@@ -619,7 +679,7 @@ function initControls() {
     $intervention.onclick = evt => {
       $interventions.forEach($intervention => {
         $intervention.classList.remove('active');
-      })
+      });
       $intervention.classList.add('active');
 
       // zoom to intervention!  WIZARD OF OZ
@@ -629,6 +689,19 @@ function initControls() {
       hasIntervention = true;
     };
   });
+
+  document.getElementById('choose_another').onclick = evt => {
+    form.demographic.value = '';
+    form.transport.value = '';
+    $interventions.forEach($intervention => {
+      $intervention.classList.remove('active');
+    });
+    hasIntervention = false;
+
+    map.setCenter(TORONTO_CENTROID);
+    map.setZoom(11);
+    redrawMarkers();
+  };
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKZYcFPS95XmFWNZ1o6EWTNORJvTPm7lo&callback=init" async defer></script>

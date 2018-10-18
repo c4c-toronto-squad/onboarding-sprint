@@ -86,7 +86,6 @@ html, body, #map {
   position: absolute;
   bottom: 0;
   padding-left: 35px;
-  padding-bottom: 14px;
 }
 
 #choose_another {
@@ -555,6 +554,19 @@ function promiseIntervention() {
   ];
   return Promise.all(promises)
     .then(([events, involved]) => {
+      let i = 0;
+      const n = involved.length;
+      events.forEach(event => {
+        const demographic = new Set();
+        const transport = new Set();
+        while (i < n && involved[i].id === event.id) {
+          demographic.add(involved[i].demographic);
+          transport.add(involved[i].transport);
+          i++;
+        }
+        event.demographic = demographic;
+        event.transport = transport;
+      });
       return events;
     });
 }
@@ -624,13 +636,22 @@ function interventionClicked() {
   }
 }
 
+function matchesQueryTerm(queryValue, value) {
+  if (value instanceof Set) {
+    return value.has(queryValue);
+  }
+  return value === queryValue;
+}
+
 function matchesQuery(query) {
   return d => {
     const {demographic, transport} = query;
-    if (demographic !== null && demographic !== d.demographic) {
+    if (demographic !== null &&
+        !matchesQueryTerm(demographic, d.demographic)) {
       return false;
     }
-    if (transport !== null && transport !== d.transport) {
+    if (transport !== null &&
+        !matchesQueryTerm(transport, d.transport)) {
       return false;
     }
     return true;

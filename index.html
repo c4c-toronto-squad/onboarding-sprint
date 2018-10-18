@@ -179,99 +179,113 @@ circle.collision.collision-fatal {
 <script>
 const TORONTO_CENTROID = {lat: 43.6986, lng: -79.3854};
 
+
+
 // hide unneeded features to focus on roads
 // see https://snazzymaps.com/style/7846/roads-only
 const styles = [
-  {
-    "featureType": "administrative",
-    "elementType": "all",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "landscape",
-    "elementType": "all",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "all",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "road",
-    "elementType": "all",
-    "stylers": [
-      {
-        "visibility": "on"
-      }
-    ]
-  },
-  {
-    "featureType": "transit",
-    "elementType": "all",
-    "stylers": [
-      {
-        "visibility": "on"
-      }
-    ]
-  },
-  {
-    "featureType": "transit",
-    "elementType": "labels",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "all",
-    "stylers": [
-      {
-        "visibility": "on"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#12608d"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  }
+    {
+        "featureType": "all",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#ffffff"
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.text.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#3e606f"
+            },
+            {
+                "weight": 2
+            },
+            {
+                "gamma": 0.84
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#2c5a71"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#406d80"
+            }
+        ]
+    },
+    {
+        "featureType": "poi.park",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#2c5a71"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#29768a"
+            },
+            {
+                "lightness": -37
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#406d80"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#193341"
+            }
+        ]
+    }
 ];
 
 const CollisionSeverity = {
@@ -283,6 +297,8 @@ const CollisionSeverity = {
 const $map = document.getElementById('map');
 const form = document.forms.form_query;
 let dataKSI = [];
+let dataIntervention = [];
+let map = null;
 let layer = null;
 let overlay = null;
 let hasIntervention = false;
@@ -401,10 +417,10 @@ function promiseKSI() {
 function promiseEvents() {
   return d3.csv('/data/events_filtered.csv', d => {
     const date = new Date(d.collision_date).valueOf();
-    const timeOfDay = parseInteger(d.collision_time);
+    const timeOfDay = parseInt(d.collision_time, 10);
     const mins = Math.floor(timeOfDay / 100) * 60 + timeOfDay % 100;
 
-    const id = parseInteger(d.collision_id);
+    const id = parseInt(d.collision_id, 10);
     const t = new Date(date + mins * 60 * 1000);
     const lat = parseFloat(d.latitude);
     const lng = parseFloat(d.longitude);
@@ -416,12 +432,23 @@ function promiseEvents() {
 
 function promiseInvolved() {
   return d3.csv('/data/involved_filtered.csv', d => {
-    const id = parseInteger(d.collision_id);
+    const id = parseInt(d.collision_id, 10);
     const demographic = getInvolvedDemographic(d);
     const transport = getInvolvedTransport(d);
 
     return {id, demographic, transport};
   });
+}
+
+function promiseIntervention() {
+  const promises = [
+    promiseEvents(),
+    promiseInvolved()
+  ];
+  return Promise.all(promises)
+    .then(([events, involved]) => {
+      return events;
+    });
 }
 
 function init() {
@@ -433,7 +460,7 @@ function init() {
 }
 
 function initMap(data) {
-  const map = new google.maps.Map($map, {
+  map = new google.maps.Map($map, {
     center: TORONTO_CENTROID,
     zoom: 11,
     // disable pan / zoom for now
@@ -446,14 +473,6 @@ function initMap(data) {
     // styles (see above)
     styles
   });
-
-  /*
-  // focus on Richmond / Adelaide area
-  const bounds = new google.maps.LatLngBounds();
-  bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
-  bounds.extend(new google.maps.LatLng(43.666530, -79.338263));
-  map.fitBounds(bounds);
-  */
 
   overlay = new google.maps.OverlayView();
 
@@ -471,12 +490,22 @@ function initMap(data) {
       .attr('viewBox', `${-halfWidth} ${-halfHeight} ${width} ${height}`)
       .attr('xmlns', 'http://www.w3.org/2000/svg');
 
-    // Draw each marker as a separate SVG element.
-    // We could use a single SVG, but what size would it have?
     overlay.draw = redrawMarkers;
   };
 
   overlay.setMap(map);
+}
+
+function interventionClicked() {
+  promiseIntervention().then(data => {
+    dataIntervention = data;
+    redrawMarkers();
+
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
+    bounds.extend(new google.maps.LatLng(43.666530, -79.338263));
+    map.fitBounds(bounds);
+  });
 }
 
 function matchesQuery(query) {
@@ -496,7 +525,9 @@ function redrawMarkers() {
   const projection = overlay.getProjection();
 
   const query = getQuery();
-  const data = dataKSI.filter(matchesQuery(query));
+  let data = hasIntervention ? dataIntervention : dataKSI;
+  data = data.filter(matchesQuery(query));
+  data = data.slice(0, 1000);
   console.log(data.length);
 
   const markers = layer.selectAll('circle')
@@ -534,6 +565,11 @@ function initControls() {
         $intervention.classList.remove('active');
       })
       $intervention.classList.add('active');
+
+      // zoom to intervention!  WIZARD OF OZ
+      if (!hasIntervention) {
+        interventionClicked();
+      }
       hasIntervention = true;
     };
   });

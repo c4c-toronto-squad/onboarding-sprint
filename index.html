@@ -33,20 +33,64 @@ html, body, #map {
   width: 100%;
 
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 
   overflow: none;
 }
 
+#top {
+  width: 100%;
+  height: 60px;
+}
+
+#logo {
+  width: 305px;
+  margin: 10px 0 0 38px;
+}
+
+#content {
+  width: 100%;
+  height: calc(100% - 60px);
+
+  display: flex;
+  flex-direction: row;
+}
+
 #left {
   height: 100%;
-  width: 320px;
+  width: 337px;
   display: flex;
   flex-direction: column;
 }
 
+#vz {
+  color: #539fc5;
+}
+
+#vz > h2 {
+  font-size: 22px;
+  margin-top: 22px;
+}
+
+#vz > p {
+  margin-bottom: 22px;
+}
+
+#controls > h3 {
+  color: #3f728c;
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 14px;
+  text-transform: uppercase;
+}
+
 .left-section {
-  padding: 5px;
+  padding-left: 45px;
+}
+
+.btn-outline-primary {
+  color: #075075;
+  border-color: #075075;
 }
 
 .intervention {
@@ -62,12 +106,12 @@ html, body, #map {
 }
 
 #main {
-  width: calc(100% - 320px);
-  height: calc(100% - 160px);
+  width: calc(100% - 337px);
+  height: calc(100% - 141px);
 }
 
 #bottom {
-  height: 160px;
+  height: 141px;
   width: 100%;
 }
 
@@ -75,106 +119,115 @@ html, body, #map {
   position: absolute;
 }
 
-circle.collision {
-  fill: blue;
-  fill-opacity: 0.1;
+circle.collision.collision-fatal {
+  fill: #b249f4;
+  fill-opacity: 0.5;
 }
 
 circle.collision.collision-injury {
-  fill: yellow;
-}
-
-circle.collision.collision-fatal {
-  fill: red;
+  fill: #eda7ff;
   fill-opacity: 0.5;
 }
+
+circle.collision {
+  fill: #aaa;
+  fill-opacity: 0.25;
+}
+
 </style>
 </head>
 <body>
+<form id="form_query"></form>
 <div id="root">
-  <form id="form_query"></form>
-  <div id="left" class="border-right">
-    <div id="vz" class="left-section border-bottom">
-      <h1>Vision Zero TO</h1>
-    </div>
-    <div id="legend" class="left-section border-bottom">
-      <div class="legend-entry">
-        <svg width="10" height="10" class="legend-icon">
-          <circle class="collision collision-fatal" r="5" cx="5" cy="5"></circle>
-        </svg>
-        <span>Fatal collision</span>
-      </div>
-      <div class="legend-entry">
-        <svg width="10" height="10" class="legend-icon">
-          <circle class="collision collision-injury" r="5" cx="5" cy="5"></circle>
-        </svg>
-        <span>Injury-causing collision</span>
-      </div>
-      <div class="legend-entry">
-        <svg width="10" height="10" class="legend-icon">
-          <circle class="collision" r="5" cx="5" cy="5"></circle>
-        </svg>
-        <span>Collision</span>
-      </div>
-    </div>
-    <div id="demographic" class="left-section border-bottom">
-      <p>Who do you identify with?</p>
-      <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Demographic">
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="demographic" id="demographic_child" autocomplete="off" value="CHILD"> Child
-        </label>
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="demographic" id="demographic_adult" autocomplete="off" value="ADULT"> Adult
-        </label>
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="demographic" id="demographic_senior" autocomplete="off" value="SENIOR"> Senior
-        </label>
-      </div>
-    </div>
-    <div id="transport" class="left-section border-bottom">
-      <p>How do you get around?</p>
-      <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Mode of transport">
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="transport" id="transport_walking" autocomplete="off" value="WALKING">
-          <img src="/img/pedestrian.svg" alt="Walking" width="32" height="32" />
-        </label>
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="transport" id="transport_cycling" autocomplete="off" value="CYCLING">
-          <img src="/img/cyclist.svg" alt="Cycling" width="32" height="32" />
-        </label>
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="transport" id="transport_driving" autocomplete="off" value="DRIVING">
-          <img src="/img/motorist.svg" alt="Driving" width="32" height="32" />
-        </label>
-        <label class="btn btn-outline-secondary">
-          <input type="radio" form="form_query" name="transport" id="transport_transit" autocomplete="off" value="TRANSIT">
-          <img src="/img/transit.svg" alt="Transit" width="32" height="32" />
-        </label>
-      </div>
-    </div>
-    <div id="interventions" class="left-section">
-      <h2>Interventions</h2>
-      <div class="list-group">
-        <button class="intervention list-group-item list-group-item-action">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </button>
-        <button class="intervention list-group-item list-group-item-action">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </button>
-      </div>
-    </div>
+  <div id="top" class="border-bottom">
+    <img id="logo" src="/img/vz_logo.svg" alt="Vision Zero Viewpoints" />
   </div>
-  <div id="main">
-    <div id="map"></div>
-    <div id="bottom" class="border-top">
-      <div id="context">
+  <div id="content">
+    <div id="left" class="border-right">
+      <div id="vz" class="left-section border-bottom">
+        <h2>In 2017, 45 lives were lost on Toronto’s streets.</h2>
+        <p>
+The Vision Zero Road Safety Plan is a comprehensive five year (2017-2021) action plan focused on reducing traffic-related fatalities and serious injuries on Toronto’s streets.
+        </p>
+      </div>
+      <div id="controls" class="left-section border-bottom">
+        <h3>Collision Impact</h3>
+        <div class="legend-entry">
+          <svg width="10" height="10" class="legend-icon">
+            <circle class="collision collision-fatal" r="5" cx="5" cy="5"></circle>
+          </svg>
+          <span>Fatalities</span>
+        </div>
+        <div class="legend-entry">
+          <svg width="10" height="10" class="legend-icon">
+            <circle class="collision collision-injury" r="5" cx="5" cy="5"></circle>
+          </svg>
+          <span>Injuries</span>
+        </div>
+        <div class="legend-entry">
+          <svg width="10" height="10" class="legend-icon">
+            <circle class="collision" r="5" cx="5" cy="5"></circle>
+          </svg>
+          <span>Other</span>
+        </div>
 
+        <h3>Viewpoint</h3>
+        <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Demographic">
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="demographic" id="demographic_child" autocomplete="off" value="CHILD"> Child
+          </label>
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="demographic" id="demographic_adult" autocomplete="off" value="ADULT"> Adult
+          </label>
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="demographic" id="demographic_senior" autocomplete="off" value="SENIOR"> Senior
+          </label>
+        </div>
+
+        <h3>Mode of transport</h3>
+        <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Mode of transport">
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="transport" id="transport_walking" autocomplete="off" value="WALKING">
+            <img src="/img/pedestrian.svg" alt="Walking" width="32" height="32" />
+          </label>
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="transport" id="transport_cycling" autocomplete="off" value="CYCLING">
+            <img src="/img/cyclist.svg" alt="Cycling" width="32" height="32" />
+          </label>
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="transport" id="transport_driving" autocomplete="off" value="DRIVING">
+            <img src="/img/motorist.svg" alt="Driving" width="32" height="32" />
+          </label>
+          <label class="btn btn-outline-primary">
+            <input type="radio" form="form_query" name="transport" id="transport_transit" autocomplete="off" value="TRANSIT">
+            <img src="/img/transit.svg" alt="Transit" width="32" height="32" />
+          </label>
+        </div>
+      </div>
+      <div id="interventions" class="left-section">
+        <h2>Interventions</h2>
+        <div class="list-group">
+          <button class="intervention list-group-item list-group-item-action">
+            <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+            <p class="intervention-description">
+              Separated bike lanes are awesome.
+            </p>
+          </button>
+          <button class="intervention list-group-item list-group-item-action">
+            <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
+            <p class="intervention-description">
+              Separated bike lanes are awesome.
+            </p>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="main">
+      <div id="map"></div>
+      <div id="bottom" class="border-top">
+        <div id="context">
+
+        </div>
       </div>
     </div>
   </div>

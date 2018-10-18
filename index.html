@@ -46,9 +46,8 @@ html, body, #map {
   padding: 5px;
 }
 
-#interventions > ul {
-  height: 320px;
-  overflow-y: auto;
+.intervention {
+  cursor: pointer;
 }
 
 .intervention-icon {
@@ -152,62 +151,20 @@ circle.collision.collision-fatal {
     </div>
     <div id="interventions" class="left-section">
       <h2>Interventions</h2>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
+      <div class="list-group">
+        <button class="intervention list-group-item list-group-item-action">
           <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
           <p class="intervention-description">
             Separated bike lanes are awesome.
           </p>
-        </li>
-        <li class="list-group-item">
+        </button>
+        <button class="intervention list-group-item list-group-item-action">
           <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
           <p class="intervention-description">
             Separated bike lanes are awesome.
           </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-        <li class="list-group-item">
-          <img class="intervention-icon border rounded-circle" src="/img/separated.jpg" alt="Separated Bike Lane" />
-          <p class="intervention-description">
-            Separated bike lanes are awesome.
-          </p>
-        </li>
-      </ul>
+        </button>
+      </div>
     </div>
   </div>
   <div id="main">
@@ -328,6 +285,7 @@ const form = document.forms.form_query;
 let dataKSI = [];
 let layer = null;
 let overlay = null;
+let hasIntervention = false;
 
 function getQuery() {
   let demographic = form.demographic.value;
@@ -568,6 +526,17 @@ function initRadio(radio) {
 function initControls() {
   form.demographic.forEach(initRadio);
   form.transport.forEach(initRadio);
+
+  const $interventions = document.querySelectorAll('.intervention');
+  $interventions.forEach($intervention => {
+    $intervention.onclick = evt => {
+      $interventions.forEach($intervention => {
+        $intervention.classList.remove('active');
+      })
+      $intervention.classList.add('active');
+      hasIntervention = true;
+    };
+  });
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKZYcFPS95XmFWNZ1o6EWTNORJvTPm7lo&callback=init" async defer></script>

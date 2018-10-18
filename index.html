@@ -104,8 +104,8 @@ html, body, #map {
 }
 
 .btn-outline-primary > img {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 
 .intervention {
@@ -664,7 +664,6 @@ function redrawMarkers() {
   const query = getQuery();
   let data = hasIntervention ? dataIntervention : dataKSI;
   data = data.filter(matchesQuery(query));
-  data = data.slice(0, 1000);
   console.log(data.length);
 
   const markers = layer.selectAll('circle')

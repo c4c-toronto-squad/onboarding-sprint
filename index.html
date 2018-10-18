@@ -61,11 +61,11 @@ html, body, #map {
 
 #main {
   width: calc(100% - 320px);
-  height: calc(100% - 200px);
+  height: calc(100% - 160px);
 }
 
 #bottom {
-  height: 200px;
+  height: 160px;
   width: 100%;
 }
 
@@ -77,6 +77,15 @@ circle.collision {
   fill: blue;
   fill-opacity: 0.1;
 }
+
+circle.collision.collision-injury {
+  fill: yellow;
+}
+
+circle.collision.collision-fatal {
+  fill: red;
+  fill-opacity: 1;
+}
 </style>
 </head>
 <body>
@@ -84,6 +93,26 @@ circle.collision {
   <div id="left" class="border-right">
     <div id="vz" class="left-section border-bottom">
       <h1>Vision Zero TO</h1>
+    </div>
+    <div id="legend" class="left-section border-bottom">
+      <div class="legend-entry">
+        <svg width="10" height="10" class="legend-icon">
+          <circle class="collision collision-fatal" r="5" cx="5" cy="5"></circle>
+        </svg>
+        <span>Fatal collision</span>
+      </div>
+      <div class="legend-entry">
+        <svg width="10" height="10" class="legend-icon">
+          <circle class="collision collision-injury" r="5" cx="5" cy="5"></circle>
+        </svg>
+        <span>Injury-causing collision</span>
+      </div>
+      <div class="legend-entry">
+        <svg width="10" height="10" class="legend-icon">
+          <circle class="collision" r="5" cx="5" cy="5"></circle>
+        </svg>
+        <span>Collision</span>
+      </div>
     </div>
     <div id="demographic" class="left-section border-bottom">
       <p>Who do you identify with?</p>
@@ -192,6 +221,129 @@ circle.collision {
 <script>
 const TORONTO_CENTROID = {lat: 43.6986, lng: -79.3854};
 
+// hide unneeded features to focus on roads
+// see https://snazzymaps.com/style/7846/roads-only
+const styles = [
+  {
+    "featureType": "administrative",
+    "elementType": "all",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape",
+    "elementType": "all",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "all",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "all",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  /*
+  {
+    "featureType": "road",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  */
+  {
+    "featureType": "transit",
+    "elementType": "all",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "all",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#12608d"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  }
+];
+
+const CollisionSeverity = {
+  NORMAL: 0,
+  INJURY: 1,
+  FATAL: 2
+};
+
+function getCollisionSeverity(d) {
+  switch (d.collision_type) {
+  case 'FATAL':
+    return CollisionSeverity.FATAL;
+  case 'NON-FATAL INJURY':
+    return CollisionSeverity.INJURY;
+  default:
+    return CollisionSeverity.NORMAL;
+  }
+}
+
 function init() {
   d3.csv('/data/events_filtered.csv', d => {
     const date = new Date(d.collision_date).valueOf();
@@ -200,7 +352,9 @@ function init() {
     const t = new Date(date + mins * 60 * 1000);
     const lat = parseFloat(d.latitude);
     const lng = parseFloat(d.longitude);
-    return {t, lat, lng};
+
+    const severity = getCollisionSeverity(d);
+    return {t, lat, lng, severity};
   }).then(initMap);
 }
 
@@ -213,111 +367,7 @@ function initMap(data) {
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: false,
-    // hide unneeded features to focus on roads
-    // see https://snazzymaps.com/style/7846/roads-only
-    styles: [
-        {
-            "featureType": "administrative",
-            "elementType": "all",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        },
-        {
-            "featureType": "landscape",
-            "elementType": "all",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        },
-        {
-            "featureType": "poi",
-            "elementType": "all",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        },
-        {
-            "featureType": "road",
-            "elementType": "all",
-            "stylers": [
-                {
-                    "visibility": "on"
-                }
-            ]
-        },
-        /*
-        {
-            "featureType": "road",
-            "elementType": "labels",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        },
-        */
-        {
-            "featureType": "transit",
-            "elementType": "all",
-            "stylers": [
-                {
-                    "visibility": "on"
-                }
-            ]
-        },
-        {
-            "featureType": "transit",
-            "elementType": "labels",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        },
-        {
-            "featureType": "water",
-            "elementType": "all",
-            "stylers": [
-                {
-                    "visibility": "on"
-                }
-            ]
-        },
-        {
-            "featureType": "water",
-            "elementType": "geometry",
-            "stylers": [
-                {
-                    "color": "#12608d"
-                }
-            ]
-        },
-        {
-            "featureType": "water",
-            "elementType": "labels.text.fill",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        },
-        {
-            "featureType": "water",
-            "elementType": "labels.text.stroke",
-            "stylers": [
-                {
-                    "visibility": "off"
-                }
-            ]
-        }
-    ]
+    styles
   });
 
   const bounds = new google.maps.LatLngBounds();
@@ -329,17 +379,21 @@ function initMap(data) {
   map.fitBounds(bounds);
 
   const overlay = new google.maps.OverlayView();
-  data = data.slice(0, 1000);
+  data = data.slice(0, 10000);
 
   // Add the container when the overlay is added to the map.
   overlay.onAdd = function() {
     const {width, height} = $map.getBoundingClientRect();
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
     const layer = d3.select(this.getPanes().overlayLayer).append('svg')
       .attr('class', 'collisions')
-      .style('left', `${-width / 2}px`)
-      .style('top', `${-height / 2}px`)
+      .style('left', `${-halfWidth}px`)
+      .style('top', `${-halfHeight}px`)
       .attr('width', width)
-      .attr('height', height);
+      .attr('height', height)
+      .attr('viewBox', `${-halfWidth} ${-halfHeight} ${width} ${height}`)
+      .attr('xmlns', 'http://www.w3.org/2000/svg');
 
     // Draw each marker as a separate SVG element.
     // We could use a single SVG, but what size would it have?
@@ -352,16 +406,18 @@ function initMap(data) {
         .data(data)
         .enter().append('circle')
           .classed('collision', true)
-          .attr('r', 5);
+          .classed('collision-injury', d => d.severity === CollisionSeverity.INJURY)
+          .classed('collision-fatal', d => d.severity === CollisionSeverity.FATAL)
+          .attr('r', 5)
 
-      markers.each(transform)
+      markers.each(transform);
 
       function transform(d) {
         d = new google.maps.LatLng(d.lat, d.lng);
         d = projection.fromLatLngToDivPixel(d);
         return d3.select(this)
-          .attr('cx', d.x + width / 2)
-          .attr('cy', d.y + height / 2);
+          .attr('cx', d.x)
+          .attr('cy', d.y);
       }
     };
   };

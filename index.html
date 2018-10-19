@@ -721,8 +721,13 @@ function promiseIntervention() {
 }
 
 function init() {
-  promiseKSI().then(data => {
-    dataKSI = data;
+  const ps = [
+    promiseKSI(),
+    promiseIntervention()
+  ];
+  Promise.all(ps).then(([KSI, intervention]) => {
+    dataKSI = KSI;
+    dataIntervention = intervention;
     initMap(dataKSI);
     initControls();
   });
@@ -767,24 +772,13 @@ function initMap(data) {
   overlay.setMap(map);
 }
 
-function zoomToInterventions() {
+function interventionClicked() {
   redrawMarkers();
 
   const bounds = new google.maps.LatLngBounds();
   bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
   bounds.extend(new google.maps.LatLng(43.666530, -79.338263));
   map.fitBounds(bounds);
-}
-
-function interventionClicked() {
-  if (dataIntervention === null) {
-    promiseIntervention().then(data => {
-      dataIntervention = data;
-      zoomToInterventions();
-    });
-  } else {
-    zoomToInterventions();
-  }
 }
 
 function matchesQueryTerm(queryValue, value) {

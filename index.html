@@ -823,6 +823,10 @@ function redrawMarkers() {
   data = data.filter(matchesQuery(query));
   data = groupDataByKey(data);
   data = data.sort((a, b) => a.severity - b.severity);
+  const scale = d3.scalePow()
+    .exponent(0.5)
+    .domain([0, d3.max(data, d => d.count)])
+    .range([2, 10]);
 
   const markers = layer.selectAll('circle')
     .data(data, d => d.id);
@@ -838,7 +842,7 @@ function redrawMarkers() {
     let latLng = new google.maps.LatLng(d.lat, d.lng);
     latLng = projection.fromLatLngToDivPixel(latLng);
     return d3.select(this)
-      .attr('r', Math.ceil(2 * Math.sqrt(d.count)))
+      .attr('r', scale(d.count))
       .attr('cx', latLng.x)
       .attr('cy', latLng.y);
   }

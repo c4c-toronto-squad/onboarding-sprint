@@ -141,12 +141,21 @@ html, body, #map {
   padding-left: 35px;
 }
 
+.intervention.active {
+  background-color: #075075;
+}
+
 .intervention:nth-child(n+5) {
   opacity: 0.25;
 }
 
 .intervention:hover {
-  background-color: #f7f7f7;
+  background-color: #539fc5;
+}
+
+.intervention.active > .intervention-description,
+.intervention:hover > .intervention-description {
+  color: #fff;
 }
 
 .intervention-icon {
@@ -226,7 +235,7 @@ html, body, #map {
 
 circle.collision.collision-fatal {
   fill: #b249f4;
-  fill-opacity: 0.5;
+  fill-opacity: 0.75;
 }
 
 circle.collision.collision-injury {
@@ -605,6 +614,9 @@ function getInvolvedTransport(d) {
 }
 
 function promiseKSI() {
+  const keys = new Map();
+  let NEXT_KEY = 0;
+
   return d3.csv('/data/KSI.csv', d => {
     const date = new Date(d.DATE).valueOf();
     const timeOfDay = parseInt(d.TIME, 10);
@@ -617,11 +629,31 @@ function promiseKSI() {
     const transport = getKSITransport(d);
     const severity = getKSISeverity(d);
 
-    return {t, lat, lng, demographic, transport, severity};
+    let key = `${d.STREET1},${d.STREET2},${severity}`;
+    if (keys.has(key)) {
+      key = keys.get(key);
+    } else {
+      const nextKey = NEXT_KEY++;
+      keys.set(key, nextKey);
+      key = nextKey;
+    }
+
+    return {
+      t,
+      lat,
+      lng,
+      demographic,
+      transport,
+      severity,
+      key
+    };
   });
 }
 
 function promiseEvents() {
+  const keys = new Map();
+  let NEXT_KEY = 0;
+
   return d3.csv('/data/events_filtered.csv', d => {
     const date = new Date(d.collision_date).valueOf();
     const timeOfDay = parseInt(d.collision_time, 10);
@@ -633,7 +665,16 @@ function promiseEvents() {
     const lng = parseFloat(d.longitude);
     const severity = getEventSeverity(d);
 
-    return {id, t, lat, lng, severity};
+    let key = `${d.street_1},${d.street_2},${severity}`;
+    if (keys.has(key)) {
+      key = keys.get(key);
+    } else {
+      const nextKey = NEXT_KEY++;
+      keys.set(key, nextKey);
+      key = nextKey;
+    }
+
+    return {id, t, lat, lng, severity, key};
   });
 }
 
@@ -653,7 +694,7 @@ function promiseIntervention() {
     promiseInvolved()
   ];
   return Promise.all(promises)
-    .then(([events, involved]) => {
+    .then(([events, involved]) => {      
       let i = 0;
       const n = involved.length;
       events.forEach(event => {
@@ -758,13 +799,30 @@ function matchesQuery(query) {
   };
 }
 
+function groupDataByKey(data) {
+  data = data.sort((a, b) => a.key - b.key);
+  const groupedData = [];
+  let lastKey = null;
+  let last = null;
+  for (let d of data) {
+    if (d.key !== lastKey) {
+      last = Object.assign({}, d, {count: 0});
+      groupedData.push(last);
+      lastKey = last.key;
+    }
+    last.count++;
+  }
+  return groupedData;
+}
+
 function redrawMarkers() {
   const projection = overlay.getProjection();
 
   const query = getQuery();
   let data = hasIntervention ? dataIntervention : dataKSI;
   data = data.filter(matchesQuery(query));
-  console.log(data.length);
+  data = groupDataByKey(data);
+  data = data.sort((a, b) => a.severity - b.severity);
 
   const markers = layer.selectAll('circle')
     .data(data, d => d.id);
@@ -772,17 +830,17 @@ function redrawMarkers() {
       .classed('collision', true)
       .classed('collision-injury', d => d.severity === CollisionSeverity.INJURY)
       .classed('collision-fatal', d => d.severity === CollisionSeverity.FATAL)
-      .attr('r', 5)
       .merge(markers)
       .each(transform);
   markers.exit().remove();
 
   function transform(d) {
-    d = new google.maps.LatLng(d.lat, d.lng);
-    d = projection.fromLatLngToDivPixel(d);
+    let latLng = new google.maps.LatLng(d.lat, d.lng);
+    latLng = projection.fromLatLngToDivPixel(latLng);
     return d3.select(this)
-      .attr('cx', d.x)
-      .attr('cy', d.y);
+      .attr('r', Math.ceil(2 * Math.sqrt(d.count)))
+      .attr('cx', latLng.x)
+      .attr('cy', latLng.y);
   }
 }
 

@@ -233,6 +233,13 @@ html, body, #map {
   position: absolute;
 }
 
+path.cycle-track {
+  fill: none;
+  stroke: #0f0;
+  stroke-width: 3px;
+  opacity: 0.5;
+}
+
 circle.collision.collision-fatal {
   fill: #b249f4;
   fill-opacity: 0.75;
@@ -516,6 +523,7 @@ let dataKSI = null;
 let dataIntervention = null;
 let map = null;
 let layer = null;
+let interventionLayer = null;
 let overlay = null;
 let hasIntervention = false;
 
@@ -725,7 +733,7 @@ function initMap(data) {
     center: TORONTO_CENTROID,
     zoom: 11,
     // disable pan / zoom for now
-    gestureHandling: 'none',
+    //gestureHandling: 'none',
     // disable unneeded controls
     fullscreenControl: false,
     mapTypeControl: false,
@@ -742,7 +750,7 @@ function initMap(data) {
     const {width, height} = $map.getBoundingClientRect();
     const halfWidth = width / 2;
     const halfHeight = height / 2;
-    layer = d3.select(overlay.getPanes().overlayLayer).append('svg')
+    const svg = d3.select(overlay.getPanes().overlayLayer).append('svg')
       .attr('class', 'collisions')
       .style('left', `${-halfWidth}px`)
       .style('top', `${-halfHeight}px`)
@@ -750,6 +758,8 @@ function initMap(data) {
       .attr('height', height)
       .attr('viewBox', `${-halfWidth} ${-halfHeight} ${width} ${height}`)
       .attr('xmlns', 'http://www.w3.org/2000/svg');
+    layer = svg.append('g');
+    interventionLayer = svg.append('g');
 
     overlay.draw = redrawMarkers;
   };
@@ -815,8 +825,53 @@ function groupDataByKey(data) {
   return groupedData;
 }
 
+const RICHMOND = [
+  [-79.403665,43.6464482,0],
+  [-79.3965948,43.6478767,0],
+  [-79.3957419,43.6478145,0],
+  [-79.3932581,43.6483113,0],
+  [-79.3926144,43.6487461,0],
+  [-79.3736787,43.6528186,0],
+  [-79.3724234,43.6526051,0],
+  [-79.3641186,43.6545061,0]
+];
+
+const ADELAIDE = [
+  [-79.4032064,43.6451865,0],
+  [-79.3731913,43.6515465,0],
+  [-79.3727568,43.6515348,0],
+  [-79.371716,43.6513871,0],
+  [-79.3643446,43.6530399,0],
+  [-79.3635822,43.6535436,0]
+];
+
 function redrawMarkers() {
   const projection = overlay.getProjection();
+
+  const line = d3.line()
+    .x(d => {
+      let latLng = new google.maps.LatLng(d[1], d[0]);
+      latLng = projection.fromLatLngToDivPixel(latLng);
+      return latLng.x;
+    })
+    .y(d => {
+      let latLng = new google.maps.LatLng(d[1], d[0]);
+      latLng = projection.fromLatLngToDivPixel(latLng);
+      return latLng.y;
+    });
+
+  let cycleTracks = interventionLayer.selectAll('path');
+  if (hasIntervention) {
+    cycleTracks = cycleTracks.data([RICHMOND, ADELAIDE]);
+  } else {
+    cycleTracks = cycleTracks.data([]);
+  }
+
+  cycleTracks.enter().append('path')
+    .classed('cycle-track', true)
+    .merge(cycleTracks)
+    .attr('d', line);
+  cycleTracks.exit().remove();
 
   const query = getQuery();
   let data = hasIntervention ? dataIntervention : dataKSI;
@@ -835,10 +890,10 @@ function redrawMarkers() {
       .classed('collision-injury', d => d.severity === CollisionSeverity.INJURY)
       .classed('collision-fatal', d => d.severity === CollisionSeverity.FATAL)
       .merge(markers)
-      .each(transform);
+      .each(transformMarker);
   markers.exit().remove();
 
-  function transform(d) {
+  function transformMarker(d) {
     let latLng = new google.maps.LatLng(d.lat, d.lng);
     latLng = projection.fromLatLngToDivPixel(latLng);
     return d3.select(this)

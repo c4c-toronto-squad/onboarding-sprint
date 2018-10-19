@@ -378,11 +378,7 @@ circle.collision {
       <div id="map"></div>
       <div id="bottom">
         <div id="context">
-          <h2>
-          In 2017, 45 people lost their lives on 
-          Toronto streets. 3 of them were under 5.
-          We need to start designing better roads.
-          </h2>
+          <h2 id="context_text"></h2>
         </div>
         <div id="impact" class="border-left">
           <h2>What's the Impact?</h2>
@@ -521,6 +517,7 @@ const $map = document.getElementById('map');
 const form = document.forms.form_query;
 let dataKSI = null;
 let dataIntervention = null;
+let data = null;
 let map = null;
 let layer = null;
 let interventionLayer = null;
@@ -766,14 +763,14 @@ function initMap(data) {
     layer = svg.append('g');
     interventionLayer = svg.append('g');
 
-    overlay.draw = redrawMarkers;
+    overlay.draw = redraw;
   };
 
   overlay.setMap(map);
 }
 
 function interventionClicked() {
-  redrawMarkers();
+  redraw();
 
   const bounds = new google.maps.LatLngBounds();
   bounds.extend(new google.maps.LatLng(43.639135, -79.421064));
@@ -839,6 +836,14 @@ const ADELAIDE = [
   [-79.3635822,43.6535436,0]
 ];
 
+function updateData() {
+  const query = getQuery();
+  data = hasIntervention ? dataIntervention : dataKSI;
+  data = data.filter(matchesQuery(query));
+  data = groupDataByKey(data);
+  data = data.sort((a, b) => a.severity - b.severity);
+}
+
 function redrawMarkers() {
   const projection = overlay.getProjection();
 
@@ -867,11 +872,6 @@ function redrawMarkers() {
     .attr('d', line);
   cycleTracks.exit().remove();
 
-  const query = getQuery();
-  let data = hasIntervention ? dataIntervention : dataKSI;
-  data = data.filter(matchesQuery(query));
-  data = groupDataByKey(data);
-  data = data.sort((a, b) => a.severity - b.severity);
   const scale = d3.scalePow()
     .exponent(0.5)
     .domain([0, d3.max(data, d => d.count)])
@@ -897,8 +897,73 @@ function redrawMarkers() {
   }
 }
 
+function plural(sing, plur) {
+  return n => {
+    if (n === 1) {
+      return `1 ${sing} lost their life`;
+    }
+    return `${n} ${plur} lost their lives`;
+  };
+}
+
+function getDemographicHuman(demographic) {
+  switch (demographic) {
+  case 'CHILD':
+    return plural('child', 'children');
+  case 'ADULT':
+    return plural('adult', 'adults');
+  case 'SENIOR':
+    return plural('senior', 'seniors');
+  case null:
+  default:
+    return plural('person', 'people');
+  }
+}
+
+function getTransportHuman(transport) {
+  switch (transport) {
+  case 'WALKING':
+    return 'while walking';
+  case 'CYCLING':
+    return 'while cycling';
+  case 'DRIVING':
+    return 'while driving';
+  case 'TRANSIT':
+    return 'while riding transit';
+  case null:
+  default:
+    return '';
+  }
+}
+
+function getContextHtml() {
+  const {demographic, transport} = getQuery();
+  let demographicHuman = getDemographicHuman(demographic);
+  const transportHuman = getTransportHuman(transport);
+  const numFatal = data.filter(d => {
+    return d.severity === CollisionSeverity.FATAL;
+  }).length;
+  demographicHuman = demographicHuman(numFatal);
+  const numInjured = data.filter(d => {
+    return d.severity === CollisionSeverity.INJURY;
+  }).length;
+  const where = hasIntervention ? 'near Richmond / Adelaide' : 'on Toronto streets';
+  return `From 2007 to 2017, ${demographicHuman} ${transportHuman} ${where}. ${numInjured} more were injured. We need to start designing better roads.`;
+}
+
+function redrawContext() {
+  const contextHtml = getContextHtml();
+  document.getElementById('context_text').innerHTML = contextHtml;
+}
+
+function redraw() {
+  updateData();
+  redrawContext();
+  redrawMarkers();
+}
+
 function initRadio(radio) {
-  radio.onchange = redrawMarkers;
+  radio.onchange = redraw;
 }
 
 function initControls() {
@@ -931,7 +996,7 @@ function initControls() {
 
     map.setCenter(TORONTO_CENTROID);
     map.setZoom(11);
-    redrawMarkers();
+    redraw();
   };
 }
 </script>
